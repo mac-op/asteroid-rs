@@ -197,7 +197,7 @@ fn update(d: &RaylibDrawHandle, state: &mut State) {
                 impact = p.vel.normalized();
             }
         }
-        hit_asteroid(state, a, impact);
+        if hit {hit_asteroid(state, a, impact); }
         !a.remove
     });
     state.asteroids = asteroids;
@@ -209,8 +209,19 @@ fn update(d: &RaylibDrawHandle, state: &mut State) {
 
         if p.ttl > state.delta {
             p.ttl -= state.delta;
-            false
-        } else { true }
+            true
+        } else { false }
+    });
+
+    state.projectiles.retain_mut(|p| {
+        p.pos += p.vel;
+        p.pos.x = if p.pos.x > SIZE.0 as f32 {p.pos.x - SIZE.0 as f32} else {p.pos.x};
+        p.pos.y = if p.pos.y > SIZE.1 as f32 {p.pos.y - SIZE.1 as f32} else {p.pos.y};
+
+        if !p.remove && p.ttl > state.delta {
+            p.ttl -= state.delta;
+            true
+        } else { false }
     });
 
     let mut aliens = std::mem::take(& mut state.aliens);
